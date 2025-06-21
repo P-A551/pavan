@@ -1,3 +1,9 @@
+
+// Injected global variable fallbacks at the top of the file
+window.__app_id = window.__app_id || 'default-app-id';
+window.__firebase_config = window.__firebase_config || '{}';
+window.__initial_auth_token = window.__initial_auth_token || '';
+
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { initializeApp } from 'firebase/app';
 import {
