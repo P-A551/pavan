@@ -1,9 +1,3 @@
-
-// Injected global variable fallbacks at the top of the file
-window.__app_id = window.__app_id || 'default-app-id';
-window.__firebase_config = window.__firebase_config || '{}';
-window.__initial_auth_token = window.__initial_auth_token || '';
-
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { initializeApp } from 'firebase/app';
 import {
@@ -20,13 +14,18 @@ import {
   doc,
   setDoc,
   onSnapshot,
-  collection, // Import collection for reviews
-  addDoc,     // Import addDoc for adding reviews
-  query,      // Import query for querying reviews
-  orderBy,    // Import orderBy for sorting reviews
+  collection,
+  addDoc,
+  query,
+  // Removed orderBy as it causes index issues without proper Firestore indexes.
+  // orderBy,
 } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 
+// Declare global variables for ESLint at the very top, after all imports
+/* global __app_id */
+/* global __firebase_config */
+/* global __initial_auth_token */
 
 // Define context for authentication and user data
 const AuthContext = createContext(null);
@@ -44,10 +43,9 @@ function App() {
   const [userData, setUserData] = useState(null); // User profile data from Firestore
 
   useEffect(() => {
-    // Initialize Firebase services
+    // Define the async function inside useEffect
     const initializeFirebase = async () => {
       try {
-        // Retrieve app ID and Firebase config from global variables provided by the environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfigRaw = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
         let firebaseConfig;
@@ -150,7 +148,7 @@ function App() {
       }
     };
 
-    initializeFirebase();
+    initializeFirebase(); // Call the async function
   }, []); // Empty dependency array ensures this effect runs only once on component mount
 
   // Handle user logout
@@ -174,7 +172,7 @@ function App() {
       try {
         await setDoc(userDocRef, { defaultLanguage: lang }, { merge: true }); // Merge to only update language
         console.log("Default language updated in Firestore.");
-      } catch (error) {
+      } catch (error) { // Ensure 'error' is caught and used within this block
         console.error("Error updating language in Firestore:", error);
       }
     } else {
@@ -274,7 +272,7 @@ function LoginPage() {
   const { auth, setCurrentPage } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(''); // Correctly defined and used here
   const [loading, setLoading] = useState(false);
 
   // Handles user login
@@ -349,8 +347,8 @@ function LoginPage() {
           </button>
         </p>
       </form>
-      {/* Note about Mobile Number/OTP: Firebase Phone Auth requires additional setup (reCAPTCHA, phone number verification) 
-          and is generally more complex to implement and test in a simple embedded environment like this. 
+      {/* Note about Mobile Number/OTP: Firebase Phone Auth requires additional setup (reCAPTCHA, phone number verification)
+          and is generally more complex to implement and test in a simple embedded environment like this.
           It is recommended to refer to Firebase documentation for full Phone Auth setup if desired. */}
     </div>
   );
@@ -642,7 +640,7 @@ function HomePage() {
         emailSentFail: "ഇമെയിൽ അയക്കുന്നതിൽ പരാജയപ്പെട്ടു:",
       },
       ta: {
-        welcome: "ஜோதிட நுண்ணறிவுகளுக்கு வரவேற்கிறோம்",
+        title: "ஜோதிட நுண்ணறிவுகளுக்கு வரவேற்கிறோம்",
         enterDetails: "உங்கள் பிறப்பு விவரங்களை உள்ளிடவும்",
         birthDate: "பிறந்த தேதி",
         birthTime: "பிறந்த நேரம்",
@@ -861,7 +859,7 @@ function AstrologyFacts() {
         title: "ಜ್ಯೋತಿಷ್ಯ ಸಂಗತಿಗಳು",
         loading: "ಸಂಗತಿಗಳನ್ನು ರಚಿಸಲಾಗುತ್ತಿದೆ...",
         back: "ಮನೆಗೆ ಹಿಂತಿರುಗಿ",
-        error: "ಸಂಗತಿಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ. ದಯatcplease ಮತ್ತೆ ಪ್ರಯತ್ನించండి.",
+        error: "ಸಂಗತಿಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ. ದയatcplease ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
       },
     };
     return translations[defaultLanguage]?.[key] || translations['en'][key];
@@ -1002,7 +1000,7 @@ function AdvancedAstrology() {
         title: "ಜ್ಯೋತಿಷ್ಯ: ಇಂದಿನ ವಿಜ್ಞಾನಕ್ಕಿಂತ ಹೆಚ್ಚು ಮುಂದುವರಿದಿದೆಯೇ?",
         loading: "ವಿಷಯವನ್ನು ರಚಿಸಲಾಗುತ್ತಿದೆ...",
         back: "ಮನೆಗೆ ಹಿಂತಿರುಗಿ",
-        error: "ವಿಷಯವನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+        error: "ವಿಷಯವನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ. ದಯatcplease ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
       },
     };
     return translations[defaultLanguage]?.[key] || translations['en'][key];
@@ -1014,7 +1012,7 @@ function AdvancedAstrology() {
       setLoading(true);
       setError('');
       try {
-        const prompt = `Write an essay in ${defaultLanguage} language explaining the perspective that astrology is far advanced than today's science. Focus on philosophical, historical, and conceptual arguments rather than scientific proof. Structure it with an introduction, a few paragraphs, and a conclusion.`;
+        const prompt = `Write an essay in ${defaultLanguage} language explaining the perspective that astrology is far advanced than today's science. Focus on philosophical, historical, and conceptual arguments rather than scientific proof. Structure it with an high level introduction, a few paragraphs, and a conclusion.`;
         const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
         const payload = { contents: chatHistory };
         const apiKey = ""; // API key is handled by the environment for Gemini API calls
@@ -1212,7 +1210,7 @@ function VedicAstrologySigns() {
         back: "ഹോമിലേക്ക് തിരികെ",
       },
       ta: {
-        title: "வேத ஜோதிட ராசிகள் மற்றும் அவற்றின் முக்கியத்துவம்",
+        title: "ஜோதிட நுண்ணறிவுகளுக்கு வரவேற்கிறோம்",
         intro: "வேத ஜோதிடத்தில், 12 ராசிகள், 9 கிரகங்கள் (நவக்கிரகங்கள்), 12 வீடுகள் மற்றும் 27 நட்சத்திரங்கள் உள்ளன. இங்கே ஒரு எளிய விளக்கம்:",
         zodiacSignsTitle: "12 ராசிகள்:",
         mesha: "மேஷம் (Aries) – துணிச்சலான மற்றும் ஆற்றல் மிக்க",
@@ -1244,34 +1242,25 @@ function VedicAstrologySigns() {
       },
       kn: {
         title: "ಜ್ಯೋತಿಷ್ಯ ಒಳನೋಟಗಳಿಗೆ ಸ್ವಾಗತ",
-        intro: "ವೈದಿಕ ಜ್ಯೋತಿಷ್ಯದಲ್ಲಿ, 12 ರಾಶಿ ಚಿಹ್ನೆಗಳು, 9 ಗ್ರಹಗಳು (ನವಗ್ರಹಗಳು), 12 ಮನೆಗಳು ಮತ್ತು 27 ಚಂದ್ರ ನಕ್ಷತ್ರಪುಂಜಗಳು (ನಕ್ಷತ್ರಗಳು) ಇವೆ. ಇಲ್ಲಿ ಸರಳ ವಿಭಜನೆ ಇದೆ:",
-        zodiacSignsTitle: "12 ರಾಶಿ ಚಿಹ್ನೆಗಳು (ರಾಶಿ):",
-        mesha: "ಮೇಷ (Aries) – ಧೈರ್ಯಶಾಲಿ ಮತ್ತು ಶಕ್ತಿಶಾಲಿ",
-        vrishabha: "ವೃಷಭ (Taurus) – ಸ್ಥಿರ ಮತ್ತು ನಿಷ್ಠಾವಂತ",
-        mithuna: "ಮಿಥುನ (Gemini) – ಸಂವಹನಶೀಲ ಮತ್ತು ಕುತೂಹಲಕಾರಿ",
-        karka: "ಕರ್ಕಾಟಕ (Cancer) – ಭಾವನಾತ್ಮಕ ಮತ್ತು ಪೋಷಿಸುವ",
-        simha: "ಸಿಂಹ (Leo) – ಹೆಮ್ಮೆ ಮತ್ತು ಬಲಶಾಲಿ",
-        kanya: "ಕನ್ಯಾ (Virgo) – ಪ್ರಾಯೋಗಿಕ ಮತ್ತು ಪರಿಪೂರ್ಣತಾವಾದಿ",
-        tula: "ತುಲಾ (Libra) – ಸಮತೋಲಿತ ಮತ್ತು ಆಕರ್ಷಕ",
-        vrischika: "ವೃಶ್ಚಿಕ (Scorpio) – ಆಳವಾದ ಮತ್ತು ಶಕ್ತಿಶಾಲಿ",
-        dhanu: "ಧನು (Sagittarius) – ಸಾಹಸಮಯ ಮತ್ತು ಬುದ್ಧಿವಂತ",
-        makara: "ಮಕರ (Capricorn) – ಶಿಸ್ತಿನ ಮತ್ತು ಕಷ್ಟಪಟ್ಟು ದುಡಿಯುವ",
-        kumbha: "ಕುಂಭ (Aquarius) – ನವೀನ ಮತ್ತು ಸ್ವತಂತ್ರ",
-        meena: "ಮೀನ (Pisces) – ಸಂವೇದನಾಶೀಲ ಮತ್ತು ಕಲಾತ್ಮಕ",
-        zodiacConclusion: "ಪ್ರತಿ ರಾಶಿ ಚಿಹ್ನೆಯನ್ನು ಒಂದು ಗ್ರಹವು ಆಳುತ್ತದೆ ಮತ್ತು ಅದರದೇ ಆದ ಗುಣಗಳನ್ನು ಹೊಂದಿದೆ. ಜನ್ಮ ಸಮಯದಲ್ಲಿ ಈ ಚಿಹ್ನೆಗಳಲ್ಲಿ ಗ್ರಹಗಳ ಸ್ಥಾನವನ್ನು ಅಧ್ಯಯನ ಮಾಡುವ ಮೂಲಕ ಭವಿಷ್ಯವಾಣಿಗಳನ್ನು ಮಾಡಲಾಗುತ್ತದೆ.",
-        navagrahasTitle: "ನವಗ್ರಹಗಳು – 9 ಗ್ರಹ ಪ್ರಭಾವಿಗಳು",
-        navagrahasIntro: "ನವಗ್ರಹಗಳು:",
-        sun: "ಸೂರ್ಯ (Surya)",
-        moon: "ಚಂದ್ರ (Chandra)",
-        mars: "ಮಂಗಳ (Mangal)",
-        mercury: "ಬುಧ (Budh)",
-        jupiter: "ಗುರು (Guru)",
-        venus: "ಶುಕ್ರ (Shukra)",
-        saturn: "ಶನಿ (Shani)",
-        rahu: "ರಾಹು (ಚಂದ್ರನ ಉತ್ತರ ನೋಡ್)",
-        ketu: "ಕೇತು (ಚಂದ್ರನ ದಕ್ಷಿಣ ನೋಡ್)",
-        navagrahasConclusion: "ಈ ಗ್ರಹಗಳು ನಮ್ಮ ಜೀವನದ ವಿವಿಧ ಭಾಗಗಳನ್ನು ಪ್ರಭಾವಿಸುತ್ತವೆ – ಆರೋಗ್ಯ ಮತ್ತು ವೃತ್ತಿಯಿಂದ ಪ್ರೀತಿ ಮತ್ತು ಅದೃಷ್ಟದವರೆಗೆ. ಭವಿಷ್ಯವಾಣಿಗಳನ್ನು ನೀಡಲು ಜ್ಯೋತಿಷಿಗಳು ನಿಮ್ಮ ಜನ್ಮ ಚಾರ್ಟ್‌ನಲ್ಲಿ ಅವರ ಸ್ಥಾನಗಳನ್ನು ಪರಿಶೀಲಿಸುತ್ತಾರೆ.",
-        back: "ಮನೆಗೆ ಹಿಂತಿರುಗಿ",
+        enterDetails: "ನಿಮ್ಮ ಜನ್ಮ ವಿವರಗಳನ್ನು ನಮೂದಿಸಿ",
+        birthDate: "ಜನ್ಮ ದಿನಾಂಕ",
+        birthTime: "ಜನ್ಮ ಸಮಯ",
+        birthPlace: "ಜನ್ಮ ಸ್ಥಳ",
+        saveDetails: "ವಿವರಗಳನ್ನು ಉಳಿಸಿ",
+        sendEmail: "ಇಮೇಲ್ ಮೂಲಕ ವಿವರಗಳನ್ನು ಕಳುಹಿಸಿ",
+        viewFacts: "ಜ್ಯೋತಿಷ್ಯ ಸಂಗತಿಗಳನ್ನು ವೀಕ್ಷಿಸಿ",
+        advancedAstrology: "ಜ್ಯೋತಿಷ್ಯ vs. ಆಧುನಿಕ ವಿಜ್ಞಾನ",
+        vedicSigns: "ವೈದಿಕ ಜ್ಯೋತಿಷ್ಯ ಚಿಹ್ನೆಗಳು ಮತ್ತು ಅವುಗಳ ಪ್ರಾಮುಖ್ಯತೆ",
+        myServices: "ನಮ್ಮ ಸೇವೆಗಳನ್ನು ಅನ್ವೇಷಿಸಿ",
+        customerReviews: "ಗ್ರಾಹಕ ವಿಮರ್ಶೆಗಳು ಮತ್ತು ರೇಟಿಂಗ್‌ಗಳು",
+        nakshatras: "27 ನಕ್ಷತ್ರಗಳ ಬಗ್ಗೆ ಸಾಮಾನ್ಯ ವಿವರಗಳು", // New translation
+        detailsSaved: "ಜನ್ಮ ವಿವರಗಳನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಉಳಿಸಲಾಗಿದೆ!",
+        failedToSave: "ವಿವರಗಳನ್ನು ಉಳಿಸಲು ವಿಫಲವಾಗಿದೆ:",
+        notAuthenticated: "ದೋಷ: ಬಳಕೆದಾರರನ್ನು ದೃಢೀಕರಿಸಲಾಗಿಲ್ಲ. ದಯವಿಟ್ಟು ಲಾಗಿನ್ ಮಾಡಿ.",
+        saveDetailsFirst: "ಇಮೇಲ್ ಮೂಲಕ ಕಳುಹಿಸುವ ಮೊದಲು ದಯವಿಟ್ಟು ನಿಮ್ಮ ಜನ್ಮ ವಿವರಗಳನ್ನು ಉಳಿಸಿ.",
+        emailSending: "ಇಮೇಲ್ ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ...",
+        emailSentSuccess: "ಇಮೇಲ್ ಯಶಸ್ವಿಯಾಗಿ ಕಳುಹಿಸಲಾಗಿದೆ!",
+        emailSentFail: "ಇಮೇಲ್ ಕಳುಹಿಸಲು ವಿಫಲವಾಗಿದೆ:",
       },
     };
     return translations[defaultLanguage]?.[key] || translations['en'][key];
@@ -1283,42 +1272,38 @@ function VedicAstrologySigns() {
         {getTranslation('title')}
       </h2>
 
-      <div className="bg-purple-600 p-6 rounded-lg text-white prose prose-invert max-w-none">
+      <div className="text-lg text-white mb-6">
         <p className="mb-4">{getTranslation('intro')}</p>
 
-        <h3 className="text-2xl font-semibold text-white mb-3">
-          {getTranslation('zodiacSignsTitle')}
-        </h3>
+        <h3 className="text-2xl font-semibold mb-3">{getTranslation('zodiacSignsTitle')}</h3>
         <ul className="list-disc list-inside space-y-2 mb-4">
-          <li>{getTranslation('mesha')}</li>
-          <li>{getTranslation('vrishabha')}</li>
-          <li>{getTranslation('mithuna')}</li>
-          <li>{getTranslation('karka')}</li>
-          <li>{getTranslation('simha')}</li>
-          <li>{getTranslation('kanya')}</li>
-          <li>{getTranslation('tula')}</li>
-          <li>{getTranslation('vrischika')}</li>
-          <li>{getTranslation('dhanu')}</li>
-          <li>{getTranslation('makara')}</li>
-          <li>{getTranslation('kumbha')}</li>
-          <li>{getTranslation('meena')}</li>
+          <li><strong>{getTranslation('mesha')}</strong></li>
+          <li><strong>{getTranslation('vrishabha')}</strong></li>
+          <li><strong>{getTranslation('mithuna')}</strong></li>
+          <li><strong>{getTranslation('karka')}</strong></li>
+          <li><strong>{getTranslation('simha')}</strong></li>
+          <li><strong>{getTranslation('kanya')}</strong></li>
+          <li><strong>{getTranslation('tula')}</strong></li>
+          <li><strong>{getTranslation('vrischika')}</strong></li>
+          <li><strong>{getTranslation('dhanu')}</strong></li>
+          <li><strong>{getTranslation('makara')}</strong></li>
+          <li><strong>{getTranslation('kumbha')}</strong></li>
+          <li><strong>{getTranslation('meena')}</strong></li>
         </ul>
         <p className="mb-6">{getTranslation('zodiacConclusion')}</p>
 
-        <h3 className="text-2xl font-semibold text-white mb-3">
-          {getTranslation('navagrahasTitle')}
-        </h3>
-        <p className="mb-2">{getTranslation('navagrahasIntro')}</p>
+        <h3 className="text-2xl font-semibold mb-3">{getTranslation('navagrahasTitle')}</h3>
+        <p className="mb-4">{getTranslation('navagrahasIntro')}</p>
         <ul className="list-disc list-inside space-y-2 mb-4">
-          <li>{getTranslation('sun')}</li>
-          <li>{getTranslation('moon')}</li>
-          <li>{getTranslation('mars')}</li>
-          <li>{getTranslation('mercury')}</li>
-          <li>{getTranslation('jupiter')}</li>
-          <li>{getTranslation('venus')}</li>
-          <li>{getTranslation('saturn')}</li>
-          <li>{getTranslation('rahu')}</li>
-          <li>{getTranslation('ketu')}</li>
+          <li><strong>{getTranslation('sun')}</strong></li>
+          <li><strong>{getTranslation('moon')}</strong></li>
+          <li><strong>{getTranslation('mars')}</strong></li>
+          <li><strong>{getTranslation('mercury')}</strong></li>
+          <li><strong>{getTranslation('jupiter')}</strong></li>
+          <li><strong>{getTranslation('venus')}</strong></li>
+          <li><strong>{getTranslation('saturn')}</strong></li>
+          <li><strong>{getTranslation('rahu')}</strong></li>
+          <li><strong>{getTranslation('ketu')}</strong></li>
         </ul>
         <p>{getTranslation('navagrahasConclusion')}</p>
       </div>
@@ -1333,93 +1318,100 @@ function VedicAstrologySigns() {
   );
 }
 
-// NEW COMPONENT: Services Page
+// Services Page component: Explains the types of astrology services offered
 function ServicesPage() {
   const { setCurrentPage, defaultLanguage } = useContext(AuthContext);
+  const [services, setServices] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const getTranslation = (key) => {
     const translations = {
       en: {
         title: "Our Astrology Services",
-        intro: "We offer personalized astrological guidance to help you navigate various aspects of your life. Our services include insights into:",
-        life: "Life Path and General Well-being: Understand your true potential and life's purpose.",
-        health: "Health and Vitality: Astrological insights into well-being and preventive measures.",
-        wealth: "Wealth and Financial Prosperity: Guidance on career, investments, and financial growth.",
-        education: "Education and Learning: Best academic paths and intellectual development.",
-        marriage: "Marriage and Relationships: Compatibility, timing for significant relationships, and marital harmony.",
-        partnerCharacter: "Character of Life Partner: Insights into the nature and compatibility of your prospective partner.",
-        lifeBasement: "Foundational Life Aspects: Deep understanding of core life areas and their astrological influences.",
-        business: "Business Ventures and Career: Identifying suitable business fields and career opportunities.",
+        loading: "Loading services information...",
         back: "Back to Home",
+        error: "Failed to load services. Please try again.",
       },
       hi: {
         title: "हमारी ज्योतिष सेवाएँ",
-        intro: "हम आपके जीवन के विभिन्न पहलुओं को नेविगेट करने में आपकी मदद करने के लिए व्यक्तिगत ज्योतिषीय मार्गदर्शन प्रदान करते हैं। हमारी सेवाओं में शामिल हैं:",
-        life: "जीवन पथ और सामान्य कल्याण: अपनी वास्तविक क्षमता और जीवन के उद्देश्य को समझें।",
-        health: "स्वास्थ्य और जीवन शक्ति: कल्याण और निवारक उपायों में ज्योतिषीय अंतर्दृष्टि।",
-        wealth: "धन और वित्तीय समृद्धि: करियर, निवेश और वित्तीय विकास पर मार्गदर्शन।",
-        education: "शिक्षा और सीखना: सर्वोत्तम शैक्षणिक मार्ग और बौद्धिक विकास।",
-        marriage: "विवाह और रिश्ते: अनुकूलता, महत्वपूर्ण रिश्तों के लिए समय, और वैवाहिक सद्भाव।",
-        partnerCharacter: "जीवनसाथी का चरित्र: आपके संभावित साथी के स्वभाव और अनुकूलता में अंतर्दृष्टि।",
-        lifeBasement: "मौलिक जीवन पहलू: मुख्य जीवन क्षेत्रों और उनके ज्योतिषीय प्रभावों की गहरी समझ।",
-        business: "व्यवसाय उद्यम और करियर: उपयुक्त व्यावसायिक क्षेत्रों और करियर के अवसरों की पहचान करना।",
+        loading: "सेवाओं की जानकारी लोड हो रही है...",
         back: "होम पर वापस",
+        error: "सेवाएं लोड करने में विफल। कृपया पुन: प्रयास करें।",
       },
       te: {
         title: "మా జ్యోతిష్య సేవలు",
-        intro: "మీ జీవితంలోని వివిధ అంశాలను నావిగేట్ చేయడానికి మీకు సహాయపడటానికి మేము వ్యక్తిగతీకరించిన జ్యోతిష్య మార్గదర్శకత్వాన్ని అందిస్తాము. మా సేవలు వీటిపై అంతర్దృష్టులను కలిగి ఉంటాయి:",
-        life: "జీవిత మార్గం మరియు సాధారణ శ్రేయస్సు: మీ నిజమైన సామర్థ్యాన్ని మరియు జీవిత లక్ష్యాన్ని అర్థం చేసుకోండి.",
-        health: "ఆరోగ్యం మరియు జీవశక్తి: శ్రేయస్సు మరియు నివారణ చర్యలలో జ్యోతిష్య అంతర్దృష్టులు.",
-        wealth: "సంపద మరియు ఆర్థిక శ్రేయస్సు: వృత్తి, పెట్టుబడులు మరియు ఆర్థిక వృద్ధిపై మార్గదర్శకత్వం.",
-        education: "విద్య మరియు అభ్యాసం: ఉత్తమ విద్యా మార్గాలు మరియు మేధో అభివృద్ధి.",
-        marriage: "వివాహం మరియు సంబంధాలు: అనుకూలత, ముఖ్యమైన సంబంధాలకు సమయం మరియు వైవాహిక సామరస్యం.",
-        partnerCharacter: "జీవిత భాగస్వామి స్వభావం: మీ కాబోయే భాగస్వామి స్వభావం మరియు అనుకూలతపై అంతర్దృష్టులు.",
-        lifeBasement: "ప్రాథమిక జీవిత అంశాలు: ప్రధాన జీవిత ప్రాంతాలు మరియు వాటి జ్యోతిష్య ప్రభావాలపై లోతైన అవగాహన.",
-        business: "వ్యాపార వెంచర్లు మరియు వృత్తి: తగిన వ్యాపార రంగాలు మరియు వృత్తి అవకాశాలను గుర్తించడం.",
+        loading: "సేవల సమాచారం లోడ్ అవుతోంది...",
         back: "హోమ్‌కు తిరిగి వెళ్ళు",
+        error: "సేవలను లోడ్ చేయడంలో విఫలమైంది. దయచేసి మళ్ళీ ప్రయత్నించండి.",
       },
       ml: {
         title: "ഞങ്ങളുടെ ജ്യോതിഷ സേവനങ്ങൾ",
-        intro: "നിങ്ങളുടെ ജീവിതത്തിന്റെ വിവിധ വശങ്ങളിൽ സഞ്ചരിക്കാൻ നിങ്ങളെ സഹായിക്കുന്നതിന് ഞങ്ങൾ വ്യക്തിഗത ജ്യോതിഷ മാർഗ്ഗനിർദ്ദേശം വാഗ്ദാനം ചെയ്യുന്നു. ഞങ്ങളുടെ സേവനങ്ങളിൽ ഉൾപ്പെടുന്നു:",
-        life: "ജീവിത പാതയും പൊതുവായ ക്ഷേമവും: നിങ്ങളുടെ യഥാർത്ഥ സാധ്യതയും ജീവിത ലക്ഷ്യവും മനസ്സിലാക്കുക.",
-        health: "ആരോഗ്യവും ഊർജ്ജസ്വലതയും: ക്ഷേമത്തെയും പ്രതിരോധ നടപടികളെയും കുറിച്ചുള്ള ജ്യോതിഷ ഉൾക്കാഴ്ചകൾ.",
-        wealth: "സമ്പത്തും സാമ്പത്തിക അഭിവൃദ്ധിയും: തൊഴിൽ, നിക്ഷേപങ്ങൾ, സാമ്പത്തിക വളർച്ച എന്നിവയെക്കുറിച്ചുള്ള മാർഗ്ഗനിർദ്ദേശം.",
-        education: "വിദ്യാഭ്യാസവും പഠനവും: മികച്ച അക്കാദമിക് പാതകളും ബൗദ്ധിക വികസനവും.",
-        marriage: "വിവാഹവും ബന്ധങ്ങളും: അനുയോജ്യത, പ്രധാനപ്പെട്ട ബന്ധങ്ങൾക്കുള്ള സമയം, വൈവാഹിക ഐക്യം.",
-        partnerCharacter: "ജീവിത പങ്കാളിയുടെ സ്വഭാവം: നിങ്ങളുടെ വരാനിരിക്കുന്ന പങ്കാളിയുടെ സ്വഭാവത്തെയും അനുയോജ്യതയെയും കുറിച്ചുള്ള ഉൾക്കാഴ്ചകൾ.",
-        lifeBasement: "അടിസ്ഥാനപരമായ ജീവിത വശങ്ങൾ: പ്രധാന ജീവിത മേഖലകളെയും അവയുടെ ജ്യോതിഷ സ്വാധീനങ്ങളെയും കുറിച്ചുള്ള ആഴത്തിലുള്ള ധാരണ.",
-        business: "ബിസിനസ്സ് സംരംഭങ്ങളും തൊഴിലും: അനുയോജ്യമായ ബിസിനസ്സ് മേഖലകളും തൊഴിൽ അവസരങ്ങളും തിരിച്ചറിയുന്നു.",
+        loading: "സേവന വിവരങ്ങൾ ലോഡ് ചെയ്യുന്നു...",
         back: "ഹോമിലേക്ക് തിരികെ",
+        error: "സേവനങ്ങൾ ലോഡ് ചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു. ദയവായി വീണ്ടും ശ്രമിക്കുക.",
       },
       ta: {
         title: "எங்கள் ஜோதிட சேவைகள்",
-        intro: "உங்கள் வாழ்க்கையின் பல்வேறு அம்சங்களை வழிநடத்த உங்களுக்கு உதவ தனிப்பயனாக்கப்பட்ட ஜோதிட வழிகாட்டுதலை நாங்கள் வழங்குகிறோம். எங்கள் சேவைகளில் பின்வருவன பற்றிய நுண்ணறிவுகள் அடங்கும்:",
-        life: "வாழ்க்கைப் பாதை மற்றும் பொது நல்வாழ்வு: உங்கள் உண்மையான திறனையும் வாழ்க்கையின் நோக்கத்தையும் புரிந்து கொள்ளுங்கள்.",
-        health: "ஆரோக்கியம் மற்றும் உயிர்ச்சத்து: நல்வாழ்வு மற்றும் தடுப்பு நடவடிக்கைகள் பற்றிய ஜோதிட நுண்ணறிவுகள்.",
-        wealth: "செல்வம் மற்றும் நிதி செழிப்பு: தொழில், முதலீடுகள் மற்றும் நிதி வளர்ச்சி பற்றிய வழிகாட்டுதல்.",
-        education: "கல்வி மற்றும் கற்றல்: சிறந்த கல்விப் பாதைகள் மற்றும் அறிவுசார் வளர்ச்சி.",
-        marriage: "திருமணம் மற்றும் உறவுகள்: இணக்கம், முக்கிய உறவுகளுக்கான நேரம் மற்றும் திருமண நல்லிணக்கம்.",
-        partnerCharacter: "வாழ்க்கைத் துணையின் குணம்: உங்கள் வருங்கால துணையின் தன்மை மற்றும் இணக்கம் பற்றிய நுண்ணறிவுகள்.",
-        lifeBasement: "அடிப்படை வாழ்க்கை அம்சங்கள்: முக்கிய வாழ்க்கை பகுதிகள் மற்றும் அவற்றின் ஜோதிட தாக்கங்கள் பற்றிய ஆழமான புரிதல்.",
-        business: "வணிக முயற்சிகள் மற்றும் தொழில்: பொருத்தமான வணிகத் துறைகள் மற்றும் தொழில் வாய்ப்புகளை கண்டறிதல்.",
+        loading: "சேவை தகவலை ஏற்றுகிறது...",
         back: "முகப்புக்கு திரும்பு",
+        error: "சேவைகளை ஏற்ற முடியவில்லை. மீண்டும் முயற்சிக்கவும்.",
       },
       kn: {
         title: "ನಮ್ಮ ಜ್ಯೋತಿಷ್ಯ ಸೇವೆಗಳು",
-        intro: "ನಿಮ್ಮ ಜೀವನದ ವಿವಿಧ ಅಂಶಗಳನ್ನು ನ್ಯಾವಿಗೇಟ್ ಮಾಡಲು ನಿಮಗೆ ಸಹಾಯ ಮಾಡಲು ನಾವು ವೈಯಕ್ತಿಕಗೊಳಿಸಿದ ಜ್ಯೋತಿಷ್ಯ ಮಾರ್ಗದರ್ಶನವನ್ನು ನೀಡುತ್ತೇವೆ. ನಮ್ಮ ಸೇವೆಗಳು ಈ ಕೆಳಗಿನವುಗಳ ಬಗ್ಗೆ ಒಳನೋಟಗಳನ್ನು ಒಳಗೊಂಡಿವೆ:",
-        life: "ಜೀವನ ಮಾರ್ಗ ಮತ್ತು ಸಾಮಾನ್ಯ ಯೋಗಕ್ಷೇಮ: ನಿಮ್ಮ ನಿಜವಾದ ಸಾಮರ್ಥ್ಯ ಮತ್ತು ಜೀವನದ ಉದ್ದೇಶವನ್ನು ಅರ್ಥಮಾಡಿಕೊಳ್ಳಿ.",
-        health: "ಆರೋಗ್ಯ ಮತ್ತು ಚೈತನ್ಯ: ಯೋಗಕ್ಷೇಮ ಮತ್ತು ತಡೆಗಟ್ಟುವ ಕ್ರಮಗಳ ಬಗ್ಗೆ ಜ್ಯೋತಿಷ್ಯ ಒಳನೋಟಗಳು.",
-        wealth: "ಸಂಪತ್ತು ಮತ್ತು ಆರ್ಥಿಕ ಸಮೃದ್ಧಿ: ವೃತ್ತಿ, ಹೂಡಿಕೆಗಳು ಮತ್ತು ಆರ್ಥಿಕ ಬೆಳವಣಿಗೆಯ ಕುರಿತು ಮಾರ್ಗದರ್ಶನ.",
-        education: "ಶಿಕ್ಷಣ ಮತ್ತು ಕಲಿಕೆ: ಉತ್ತಮ ಶೈಕ್ಷಣಿಕ ಮಾರ್ಗಗಳು ಮತ್ತು ಬೌದ್ಧಿಕ ಅಭಿವೃದ್ಧಿ.",
-        marriage: "ವಿವಾಹ ಮತ್ತು ಸಂಬಂಧಗಳು: ಹೊಂದಾಣಿಕೆ, ಪ್ರಮುಖ ಸಂಬಂಧಗಳಿಗೆ ಸಮಯ ಮತ್ತು ವೈವಾಹಿಕ ಸಾಮರಸ್ಯ.",
-        partnerCharacter: "ಜೀವನ ಸಂಗಾತಿಯ ಗುಣ: ನಿಮ್ಮ ನಿರೀಕ್ಷಿತ ಸಂಗಾತಿಯ ಸ್ವಭಾವ ಮತ್ತು ಹೊಂದಾಣಿಕೆಯ ಬಗ್ಗೆ ಒಳನೋಟಗಳು.",
-        lifeBasement: "ಮೂಲಭೂತ ಜೀವನ ಅಂಶಗಳು: ಪ್ರಮುಖ ಜೀವನ ಕ್ಷೇತ್ರಗಳು ಮತ್ತು ಅವುಗಳ ಜ್ಯೋತಿಷ್ಯ ಪ್ರಭಾವಗಳ ಬಗ್ಗೆ ಆಳವಾದ ತಿಳುವಳಿಕೆ.",
-        business: "ವ್ಯಾಪಾರ ಉದ್ಯಮಗಳು ಮತ್ತು ವೃತ್ತಿ: ಸೂಕ್ತವಾದ ವ್ಯಾಪಾರ ಕ್ಷೇತ್ರಗಳು ಮತ್ತು ವೃತ್ತಿ ಅವಕಾಶಗಳನ್ನು ಗುರುತಿಸುವುದು.",
+        loading: "ಸೇವಾ ಮಾಹಿತಿಯನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
         back: "ಮನೆಗೆ ಹಿಂತಿರುಗಿ",
+        error: "ಸೇವೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
       },
     };
     return translations[defaultLanguage]?.[key] || translations['en'][key];
   };
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const prompt = `Provide a detailed explanation of common astrology services in ${defaultLanguage} language. Include services like:
+          * Natal Chart Reading: Understanding individual personality, strengths, and challenges based on birth details.
+          * Compatibility Analysis (Synastry): Assessing romantic or business compatibility between individuals.
+          * Predictive Astrology (Dashas, Transits): Forecasting future events and periods based on planetary movements.
+          * Remedial Astrology: Suggesting remedies (gems, mantras, rituals) to mitigate negative planetary influences.
+          * Vastu Shastra Consultation: Guidance on architectural science for harmony and prosperity.
+          * Career & Finance Astrology: Insights into professional success and financial well-being.
+          * Health Astrology: Understanding predispositions to health issues and suggesting astrological remedies.
+          Format the response with clear headings and bullet points for each service, and include a brief introductory and concluding paragraph.`;
+
+        const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+        const payload = { contents: chatHistory };
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (result.candidates && result.candidates.length > 0 &&
+            result.candidates[0].content && result.candidates[0].content.parts &&
+            result.candidates[0].content.parts.length > 0) {
+          const text = result.candidates[0].content.parts[0].text;
+          setServices(text);
+        } else {
+          setError(getTranslation('error'));
+        }
+      } catch (err) {
+        console.error("Error fetching services content:", err);
+        setError(getTranslation('error') + `: ${err.message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchServices();
+  }, [defaultLanguage]);
+
 
   return (
     <div className="bg-purple-700 p-8 rounded-2xl shadow-xl max-w-3xl w-full border border-purple-600">
@@ -1427,19 +1419,21 @@ function ServicesPage() {
         {getTranslation('title')}
       </h2>
 
-      <div className="bg-purple-600 p-6 rounded-lg text-white prose prose-invert max-w-none">
-        <p className="mb-4">{getTranslation('intro')}</p>
-        <ul className="list-disc list-inside space-y-2">
-          <li><strong>{getTranslation('life')}</strong></li>
-          <li><strong>{getTranslation('health')}</strong></li>
-          <li><strong>{getTranslation('wealth')}</strong></li>
-          <li><strong>{getTranslation('education')}</strong></li>
-          <li><strong>{getTranslation('marriage')}</strong></li>
-          <li><strong>{getTranslation('partnerCharacter')}</strong></li>
-          <li><strong>{getTranslation('lifeBasement')}</strong></li>
-          <li><strong>{getTranslation('business')}</strong></li>
-        </ul>
-      </div>
+      {loading && (
+        <div className="flex items-center justify-center text-blue-300">
+          <svg className="animate-spin h-5 w-5 mr-3 text-blue-300" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {getTranslation('loading')}
+        </div>
+      )}
+      {error && <p className="text-red-300 mt-4 text-center">{error}</p>}
+      {services && (
+        <div className="bg-purple-600 p-6 rounded-lg text-white prose prose-invert max-w-none">
+          <div dangerouslySetInnerHTML={{ __html: services.replace(/\n/g, '<br>') }} />
+        </div>
+      )}
 
       <button
         onClick={() => setCurrentPage('home')}
@@ -1451,199 +1445,190 @@ function ServicesPage() {
   );
 }
 
-// NEW COMPONENT: Reviews and Ratings Page
+// Reviews and Ratings Page Component: Allows users to submit reviews and view existing ones
 function ReviewsRatingsPage() {
-  const { db, userId, user, setCurrentPage, defaultLanguage } = useContext(AuthContext);
+  const { db, userId, user, defaultLanguage, functions } = useContext(AuthContext);
+  const [reviewText, setReviewText] = useState('');
+  const [rating, setRating] = useState(0);
   const [reviews, setReviews] = useState([]);
-  const [newReview, setNewReview] = useState('');
-  const [newRating, setNewRating] = useState(0);
-  const [submitMessage, setSubmitMessage] = useState('');
+  const [message, setMessage] = useState('');
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [loadingReviews, setLoadingReviews] = useState(true);
-  const [submittingReview, setSubmittingReview] = useState(false);
+  const [errorReviews, setErrorReviews] = useState('');
 
-  // Localization function for dynamic text
   const getTranslation = (key) => {
     const translations = {
       en: {
         title: "Customer Reviews & Ratings",
-        leaveReview: "Leave a Review",
+        submitReview: "Submit Your Review",
         yourRating: "Your Rating:",
         yourReview: "Your Review:",
-        submitReview: "Submit Review",
+        postReview: "Post Review",
+        reviewsHeading: "What Our Customers Say:",
         noReviews: "No reviews yet. Be the first to share your experience!",
-        submitSuccess: "Review submitted successfully!",
-        submitError: "Failed to submit review:",
-        loading: "Loading reviews...",
-        fetchingError: "Failed to load reviews. Please try again.",
-        loggedInAs: "Logged in as:",
         back: "Back to Home",
-        ratingInvalid: "Please select a rating (1-5 stars).",
-        reviewEmpty: "Please enter your review.",
+        success: "Review submitted successfully!",
+        errorSubmit: "Failed to submit review:",
+        errorFetch: "Failed to load reviews:",
+        charactersRemaining: "characters remaining",
+        loginToReview: "Please log in to submit a review.",
+        reviewPlaceholder: "Share your experience...",
       },
       hi: {
         title: "ग्राहक समीक्षाएँ और रेटिंग",
-        leaveReview: "एक समीक्षा छोड़ें",
+        submitReview: "अपनी समीक्षा सबमिट करें",
         yourRating: "आपकी रेटिंग:",
         yourReview: "आपकी समीक्षा:",
-        submitReview: "समीक्षा जमा करें",
-        noReviews: "अभी तक कोई समीक्षा नहीं। अपना अनुभव साझा करने वाले पहले व्यक्ति बनें!",
-        submitSuccess: "समीक्षा सफलतापूर्वक जमा की गई!",
-        submitError: "समीक्षा जमा करने में विफल:",
-        loading: "समीक्षाएं लोड हो रही हैं...",
-        fetchingError: "समीक्षाएं लोड करने में विफल। कृपया पुन: प्रयास करें।",
-        loggedInAs: "के रूप में लॉग इन है:",
+        postReview: "समीक्षा पोस्ट करें",
+        reviewsHeading: "हमारे ग्राहक क्या कहते हैं:",
+        noReviews: "अभी तक कोई समीक्षा नहीं। अपनी प्रतिक्रिया देने वाले पहले व्यक्ति बनें!",
         back: "होम पर वापस",
-        ratingInvalid: "कृपया एक रेटिंग (1-5 सितारे) चुनें।",
-        reviewEmpty: "कृपया अपनी समीक्षा दर्ज करें।",
+        success: "समीक्षा सफलतापूर्वक सबमिट की गई!",
+        errorSubmit: "समीक्षा सबमिट करने में विफल:",
+        errorFetch: "समीक्षाएं लोड करने में विफल:",
+        charactersRemaining: "वर्ण शेष",
+        loginToReview: "समीक्षा सबमिट करने के लिए कृपया लॉग इन करें।",
+        reviewPlaceholder: "अपना अनुभव साझा करें...",
       },
       te: {
         title: "కస్టమర్ సమీక్షలు & రేటింగ్‌లు",
-        leaveReview: "ఒక సమీక్షను వ్రాయండి",
+        submitReview: "మీ సమీక్షను సమర్పించండి",
         yourRating: "మీ రేటింగ్:",
         yourReview: "మీ సమీక్ష:",
-        submitReview: "సమీక్షను సమర్పించండి",
-        noReviews: "ఇంకా సమీక్షలు లేవు. మీ అనుభవాన్ని పంచుకున్న మొదటి వ్యక్తి మీరే!",
-        submitSuccess: "సమీక్ష విజయవంతంగా సమర్పించబడింది!",
-        submitError: "సమీక్షను సమర్పించడంలో విఫలమైంది:",
-        loading: "సమీక్షలు లోడ్ అవుతున్నాయి...",
-        fetchingError: "సమీక్షలను లోడ్ చేయడంలో విఫలమైంది. దయచేసి మళ్ళీ ప్రయత్నించండి.",
-        loggedInAs: "లాగిన్ అయినట్లు:",
+        postReview: "సమీక్షను పోస్ట్ చేయండి",
+        reviewsHeading: "మా కస్టమర్లు ఏమి చెబుతారు:",
+        noReviews: "ఇప్పటివరకు సమీక్షలు లేవు. మీ అనుభవాన్ని పంచుకున్న మొదటి వ్యక్తిగా ఉండండి!",
         back: "హోమ్‌కు తిరిగి వెళ్ళు",
-        ratingInvalid: "దయచేసి రేటింగ్‌ను (1-5 నక్షత్రాలు) ఎంచుకోండి.",
-        reviewEmpty: "దయచేసి మీ సమీక్షను నమోదు చేయండి.",
+        success: "సమీక్ష విజయవంతంగా సమర్పించబడింది!",
+        errorSubmit: "సమీక్షను సమర్పించడంలో విఫలమైంది:",
+        errorFetch: "సమీక్షలను లోడ్ చేయడంలో విఫలమైంది:",
+        charactersRemaining: "అక్షరాలు మిగిలి ఉన్నాయి",
+        loginToReview: "సమీక్షను సమర్పించడానికి దయచేసి లాగిన్ అవ్వండి.",
+        reviewPlaceholder: "మీ అనుభవాన్ని పంచుకోండి...",
       },
       ml: {
         title: "ഉപഭോക്തൃ അവലോകനങ്ങളും റേറ്റിംഗുകളും",
-        leaveReview: "ഒരു അവലോകനം രേഖപ്പെടുത്തുക",
+        submitReview: "നിങ്ങളുടെ അവലോകനം സമർപ്പിക്കുക",
         yourRating: "നിങ്ങളുടെ റേറ്റിംഗ്:",
         yourReview: "നിങ്ങളുടെ അവലോകനം:",
-        submitReview: "അവലോകനം സമർപ്പിക്കുക",
-        noReviews: "ഇതുവരെ അവലോകനങ്ങൾ ഇല്ല. നിങ്ങളുടെ അനുഭവം പങ്കിടുന്ന ആദ്യത്തെ ആളാകൂ!",
-        submitSuccess: "അവലോകനം വിജയകരമായി സമർപ്പിച്ചു!",
-        submitError: "അവലോകനം സമർപ്പിക്കുന്നതിൽ പരാജയപ്പെട്ടു:",
-        loading: "അവലോകനങ്ങൾ ലോഡ് ചെയ്യുന്നു...",
-        fetchingError: "അവലോകനങ്ങൾ ലോഡ് ചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു. ദയവായി വീണ്ടും ശ്രമിക്കുക.",
-        loggedInAs: "ലോഗിൻ ചെയ്തത്:",
+        postReview: "അവലോകനം പോസ്റ്റ് ചെയ്യുക",
+        reviewsHeading: "ഞങ്ങളുടെ ഉപഭോക്താക്കൾ പറയുന്നത്:",
+        noReviews: "അവലോകനങ്ങൾ ലഭ്യമല്ല. നിങ്ങളുടെ അനുഭവം പങ്കിടുന്ന ആദ്യ വ്യക്തിയാകൂ!",
         back: "ഹോമിലേക്ക് തിരികെ",
-        ratingInvalid: "ദയവായി ഒരു റേറ്റിംഗ് (1-5 നക്ഷത്രങ്ങൾ) തിരഞ്ഞെടുക്കുക.",
-        reviewEmpty: "ദയവായി നിങ്ങളുടെ അവലോകനം നൽകുക.",
+        success: "അവലോകനം വിജയകരമായി സമർപ്പിച്ചു!",
+        errorSubmit: "അവലോകനം സമർപ്പിക്കുന്നതിൽ പരാജയപ്പെട്ടു:",
+        errorFetch: "അവലോകനങ്ങൾ ലോഡ് ചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു:",
+        charactersRemaining: "അക്ഷരങ്ങൾ ബാക്കിയുണ്ട്",
+        loginToReview: "ഒരു അവലോകനം സമർപ്പിക്കാൻ ദയവായി ലോഗിൻ ചെയ്യുക.",
+        reviewPlaceholder: "നിങ്ങളുടെ അനുഭവം പങ്കിടുക...",
       },
       ta: {
         title: "வாடிக்கையாளர் மதிப்புரைகள் மற்றும் மதிப்பீடுகள்",
-        leaveReview: "ஒரு மதிப்பாய்வை எழுதுங்கள்",
+        submitReview: "உங்கள் மதிப்பாய்வைச் சமர்ப்பிக்கவும்",
         yourRating: "உங்கள் மதிப்பீடு:",
         yourReview: "உங்கள் மதிப்பாய்வு:",
-        submitReview: "மதிப்பாய்வைச் சமர்ப்பி",
-        noReviews: "இன்னும் மதிப்புரைகள் இல்லை. உங்கள் அனுபவத்தைப் பகிர்ந்து கொள்ளும் முதல் நபராக இருங்கள்!",
-        submitSuccess: "மதிப்பாய்வு வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது!",
-        submitError: "மதிப்பாய்வைச் சமர்ப்பிக்க முடியவில்லை:",
-        loading: "மதிப்புரைகளை ஏற்றுகிறது...",
-        fetchingError: "மதிப்புரைகளை ஏற்ற முடியவில்லை. மீண்டும் முயற்சிக்கவும்.",
-        loggedInAs: "உள்நுழைந்துள்ளது:",
+        postReview: "மதிப்பாய்வை இடுகையிடவும்",
+        reviewsHeading: "எங்கள் வாடிக்கையாளர்கள் என்ன சொல்கிறார்கள்:",
+        noReviews: "இதுவரை மதிப்புரைகள் இல்லை. உங்கள் அனுபவத்தைப் பகிர்ந்து கொள்ள முதல் நபராக இருங்கள்!",
         back: "முகப்புக்கு திரும்பு",
-        ratingInvalid: "தயவுசெய்து ஒரு மதிப்பீட்டை (1-5 நட்சத்திரங்கள்) தேர்ந்தெடுக்கவும்.",
-        reviewEmpty: "தயவுசெய்து உங்கள் மதிப்பாய்வை உள்ளிடவும்.",
+        success: "மதிப்பாய்வு வெற்றிகரமாகச் சமர்ப்பிக்கப்பட்டது!",
+        errorSubmit: "மதிப்பாய்வைச் சமர்ப்பிக்க முடியவில்லை:",
+        errorFetch: "மதிப்பாய்வுகளை ஏற்ற முடியவில்லை:",
+        charactersRemaining: "எழுத்துக்கள் மீதமுள்ளன",
+        loginToReview: "மதிப்பாய்வைச் சமர்ப்பிக்க உள்நுழையவும்.",
+        reviewPlaceholder: "உங்கள் அனுபவத்தைப் பகிரவும்...",
       },
       kn: {
-        title: "ಗ್ರಾಹಕ ವಿಮರ್ಶೆಗಳು ಮತ್ತು ರೇಟಿಂಗ್‌ಗಳು",
-        leaveReview: "ವಿಮರ್ಶೆ ಬರೆಯಿರಿ",
+        title: "ಗ್ರಾಹಕರ ವಿಮರ್ಶೆಗಳು ಮತ್ತು ರೇಟಿಂಗ್‌ಗಳು",
+        submitReview: "ನಿಮ್ಮ ವಿಮರ್ಶೆಯನ್ನು ಸಲ್ಲಿಸಿ",
         yourRating: "ನಿಮ್ಮ ರೇಟಿಂಗ್:",
         yourReview: "ನಿಮ್ಮ ವಿಮರ್ಶೆ:",
-        submitReview: "ವಿಮರ್ಶೆಯನ್ನು ಸಲ್ಲಿಸಿ",
-        noReviews: "ಇನ್ನೂ ಯಾವುದೇ ವಿಮರ್ಶೆಗಳಿಲ್ಲ. ನಿಮ್ಮ ಅನುಭವವನ್ನು ಹಂಚಿಕೊಳ್ಳಲು ಮೊದಲಿಗರಾಗಿ!",
-        submitSuccess: "ವಿಮರ್ಶೆಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಸಲ್ಲಿಸಲಾಗಿದೆ!",
-        submitError: "ವಿಮರ್ಶೆಯನ್ನು ಸಲ್ಲಿಸಲು ವಿಫಲವಾಗಿದೆ:",
-        loading: "ವಿಮರ್ಶೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
-        fetchingError: "ವಿಮರ್ಶೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
-        loggedInAs: "ಲಾಗ್ ಇನ್ ಮಾಡಲಾಗಿದೆ:",
+        postReview: "ವಿಮರ್ಶೆ ಪೋಸ್ಟ್ ಮಾಡಿ",
+        reviewsHeading: "ನಮ್ಮ ಗ್ರಾಹಕರು ಏನನ್ನು ಹೇಳುತ್ತಾರೆ:",
+        noReviews: "ಇನ್ನೂ ಯಾವುದೇ ವಿಮರ್ಶೆಗಳಿಲ್ಲ. ನಿಮ್ಮ ಅನುಭವವನ್ನು ಹಂಚಿಕೊಳ್ಳಲು ಮೊದಲಿಗರಾಗಿರಿ!",
         back: "ಮನೆಗೆ ಹಿಂತಿರುಗಿ",
-        ratingInvalid: "ದಯವಿಟ್ಟು ರೇಟಿಂಗ್ (1-5 ನಕ್ಷತ್ರಗಳು) ಆಯ್ಕೆಮಾಡಿ.",
-        reviewEmpty: "ದಯವಿಟ್ಟು ನಿಮ್ಮ ವಿಮರ್ಶೆಯನ್ನು ನಮೂದಿಸಿ.",
+        success: "ವಿಮರ್ಶೆಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಸಲ್ಲಿಸಲಾಗಿದೆ!",
+        errorSubmit: "ವಿಮರ್ಶೆಯನ್ನು ಸಲ್ಲಿಸಲು ವಿಫಲವಾಗಿದೆ:",
+        errorFetch: "ವಿಮರ್ಶೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ:",
+        charactersRemaining: "ಅಕ್ಷರಗಳು ಉಳಿದಿವೆ",
+        loginToReview: "ವಿಮರ್ಶೆಯನ್ನು ಸಲ್ಲಿಸಲು ದಯವಿಟ್ಟು ಲಾಗಿನ್ ಮಾಡಿ.",
+        reviewPlaceholder: "ನಿಮ್ಮ ಅನುಭವವನ್ನು ಹಂಚಿಕೊಳ್ಳಿ...",
       },
     };
     return translations[defaultLanguage]?.[key] || translations['en'][key];
   };
 
-  // Fetch reviews from Firestore on component mount
   useEffect(() => {
-    const fetchReviews = async () => {
-      if (!db) return; // Ensure db is initialized
+    // Listener for real-time updates to reviews from Firestore
+    if (db) {
       setLoadingReviews(true);
-      setError('');
+      setErrorReviews('');
       try {
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        // Query reviews collection, ordered by timestamp descending
-        const q = query(collection(db, `artifacts/${appId}/public/reviews`), orderBy('timestamp', 'desc'));
-
+        const reviewsCollectionRef = collection(db, `artifacts/${appId}/public/data/reviews`);
+        // Order by timestamp, though `orderBy` needs index in Firestore, commenting for now
+        const q = query(reviewsCollectionRef); // Removed orderBy to avoid index requirement
         const unsubscribe = onSnapshot(q, (snapshot) => {
-          const fetchedReviews = [];
-          snapshot.forEach((doc) => {
-            fetchedReviews.push({ id: doc.id, ...doc.data() });
-          });
+          const fetchedReviews = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            timestamp: doc.data().timestamp?.toDate().toLocaleString() // Convert Firestore timestamp to readable string
+          }));
           setReviews(fetchedReviews);
           setLoadingReviews(false);
         }, (error) => {
           console.error("Error fetching reviews:", error);
-          setError(getTranslation('fetchingError'));
+          setErrorReviews(`${getTranslation('errorFetch')} ${error.message}`);
           setLoadingReviews(false);
         });
-
-        return () => unsubscribe(); // Clean up the listener
-      } catch (err) {
-        console.error("Error setting up review listener:", err);
-        setError(getTranslation('fetchingError'));
+        return () => unsubscribe(); // Cleanup the listener
+      } catch (e) {
+        console.error("Error setting up reviews listener:", e);
+        setErrorReviews(`${getTranslation('errorFetch')} ${e.message}`);
         setLoadingReviews(false);
       }
-    };
-
-    if (db) { // Only fetch if db is initialized
-      fetchReviews();
     }
-  }, [db, defaultLanguage]); // Re-fetch when db or language changes
+  }, [db, defaultLanguage]); // Added defaultLanguage to dependencies of useEffect for getTranslation
 
-  // Handle review submission
   const handleSubmitReview = async (e) => {
     e.preventDefault();
-    if (!db || !userId || !user) {
-      setSubmitMessage(getTranslation('loggedInAs') + ' ' + user?.email || 'Not logged in!');
-      setTimeout(() => setSubmitMessage(''), 3000);
+    if (!user || !db) {
+      setMessage(getTranslation('loginToReview'));
+      setTimeout(() => setMessage(''), 3000);
       return;
     }
-    if (newRating < 1 || newRating > 5) {
-      setSubmitMessage(getTranslation('ratingInvalid'));
-      setTimeout(() => setSubmitMessage(''), 3000);
-      return;
-    }
-    if (!newReview.trim()) {
-      setSubmitMessage(getTranslation('reviewEmpty'));
-      setTimeout(() => setSubmitMessage(''), 3000);
+    if (!reviewText.trim() || rating === 0) {
+      setMessage("Please provide both a rating and a review.");
+      setTimeout(() => setMessage(''), 3000);
       return;
     }
 
-    setSubmittingReview(true);
-    setSubmitMessage('');
-
+    setLoadingSubmit(true);
+    setMessage('');
     try {
       const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-      const reviewsCollectionRef = collection(db, `artifacts/${appId}/public/reviews`);
+      const reviewsCollectionRef = collection(db, `artifacts/${appId}/public/data/reviews`);
       await addDoc(reviewsCollectionRef, {
         userId: userId,
-        userName: user.email || 'Anonymous', // Use email or anonymous if not available
-        rating: newRating,
-        comment: newReview.trim(),
-        timestamp: new Date(), // Store server timestamp
+        userName: user.email || 'Anonymous', // Use user email if available, otherwise Anonymous
+        rating: rating,
+        reviewText: reviewText,
+        timestamp: new Date(),
       });
-      setNewReview('');
-      setNewRating(0);
-      setSubmitMessage(getTranslation('submitSuccess'));
+      setMessage(getTranslation('success'));
+      setReviewText('');
+      setRating(0);
     } catch (error) {
       console.error("Error submitting review:", error);
-      setSubmitMessage(`${getTranslation('submitError')} ${error.message}`);
+      setMessage(`${getTranslation('errorSubmit')} ${error.message}`);
     } finally {
-      setSubmittingReview(false);
-      setTimeout(() => setSubmitMessage(''), 3000);
+      setLoadingSubmit(false);
+      setTimeout(() => setMessage(''), 3000);
     }
   };
+
+  const maxReviewLength = 500;
+  const charactersRemaining = maxReviewLength - reviewText.length;
 
   return (
     <div className="bg-purple-700 p-8 rounded-2xl shadow-xl max-w-3xl w-full border border-purple-600">
@@ -1652,95 +1637,87 @@ function ReviewsRatingsPage() {
       </h2>
 
       {/* Review Submission Form */}
-      <form onSubmit={handleSubmitReview} className="space-y-4 mb-8 p-6 bg-purple-600 rounded-lg shadow-inner">
-        <h3 className="text-xl font-semibold text-white mb-4">{getTranslation('leaveReview')}</h3>
-        <div>
-          <label className="block text-white text-sm font-semibold mb-2">{getTranslation('yourRating')}</label>
-          <div className="flex items-center space-x-1">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <svg
-                key={star}
-                className={`w-6 h-6 cursor-pointer transition duration-150 ease-in-out ${
-                  newRating >= star ? 'text-yellow-400' : 'text-gray-400'
-                }`}
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                onClick={() => setNewRating(star)}
-              >
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.683-1.539 1.118l-2.8-2.034a1 1 0 00-1.176 0l-2.8 2.034c-.784.565-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z" />
-              </svg>
-            ))}
+      {user ? (
+        <form onSubmit={handleSubmitReview} className="space-y-6 mb-8 p-6 bg-purple-600 rounded-lg shadow-inner">
+          <h3 className="text-xl font-semibold text-white mb-4">{getTranslation('submitReview')}</h3>
+          <div>
+            <label className="block text-white text-sm font-semibold mb-2">{getTranslation('yourRating')}</label>
+            <div className="flex items-center space-x-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <span
+                  key={star}
+                  className={`text-3xl cursor-pointer ${star <= rating ? 'text-yellow-400' : 'text-gray-400'}`}
+                  onClick={() => setRating(star)}
+                >
+                  ★
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
-        <div>
-          <label className="block text-white text-sm font-semibold mb-2" htmlFor="reviewComment">
-            {getTranslation('yourReview')}
-          </label>
-          <textarea
-            id="reviewComment"
-            value={newReview}
-            onChange={(e) => setNewReview(e.target.value)}
-            className="w-full p-3 rounded-lg bg-purple-500 text-white border border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-transparent min-h-[100px]"
-            placeholder="Share your experience here..."
-            required
-          ></textarea>
-        </div>
-        {submitMessage && (
-          <p className={`text-sm mt-2 ${submitMessage.includes('successfully') ? 'text-green-300' : 'text-red-300'}`}>
-            {submitMessage}
-          </p>
-        )}
-        <button
-          type="submit"
-          disabled={submittingReview}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {submittingReview ? 'Submitting...' : getTranslation('submitReview')}
-        </button>
-      </form>
+          <div>
+            <label className="block text-white text-sm font-semibold mb-2" htmlFor="reviewText">
+              {getTranslation('yourReview')}
+            </label>
+            <textarea
+              id="reviewText"
+              value={reviewText}
+              onChange={(e) => setReviewText(e.target.value.slice(0, maxReviewLength))}
+              className="w-full p-3 rounded-lg bg-purple-500 text-white border border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-transparent"
+              rows="4"
+              placeholder={getTranslation('reviewPlaceholder')}
+              required
+            ></textarea>
+            <p className="text-right text-sm text-gray-300 mt-1">
+              {charactersRemaining} {getTranslation('charactersRemaining')}
+            </p>
+          </div>
+          {message && (
+            <p className={`text-sm mt-2 ${message.includes('success') ? 'text-green-300' : 'text-red-300'}`}>
+              {message}
+            </p>
+          )}
+          <button
+            type="submit"
+            disabled={loadingSubmit || !reviewText.trim() || rating === 0}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loadingSubmit ? 'Submitting...' : getTranslation('postReview')}
+          </button>
+        </form>
+      ) : (
+        <p className="text-center text-red-300 text-lg mb-8">{getTranslation('loginToReview')}</p>
+      )}
 
       {/* Display Existing Reviews */}
-      <div className="mt-8">
-        <h3 className="text-2xl font-bold text-white mb-4">Customer Reviews</h3>
-        {loadingReviews ? (
-          <div className="flex items-center justify-center text-blue-300">
-            <svg className="animate-spin h-5 w-5 mr-3 text-blue-300" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            {getTranslation('loading')}
+      <h3 className="text-2xl font-bold text-white mb-6">{getTranslation('reviewsHeading')}</h3>
+      {loadingReviews && (
+        <div className="flex items-center justify-center text-blue-300">
+          <svg className="animate-spin h-5 w-5 mr-3 text-blue-300" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Loading reviews...
+        </div>
+      )}
+      {errorReviews && <p className="text-red-300 mt-4 text-center">{errorReviews}</p>}
+      {!loadingReviews && reviews.length === 0 && (
+        <p className="text-center text-gray-300">{getTranslation('noReviews')}</p>
+      )}
+      <div className="space-y-6">
+        {reviews.map((review) => (
+          <div key={review.id} className="bg-purple-600 p-6 rounded-lg shadow-md border border-purple-500">
+            <div className="flex items-center mb-2">
+              <span className="text-yellow-400 text-xl font-bold mr-2">
+                {'★'.repeat(review.rating)}
+              </span>
+              <span className="text-gray-300">({review.rating}/5)</span>
+            </div>
+            <p className="text-white text-lg mb-2">{review.reviewText}</p>
+            <p className="text-sm text-gray-400">
+              By {review.userName} on {review.timestamp}
+            </p>
           </div>
-        ) : error ? (
-          <p className="text-red-300 text-center">{error}</p>
-        ) : reviews.length === 0 ? (
-          <p className="text-gray-300 text-center">{getTranslation('noReviews')}</p>
-        ) : (
-          <div className="space-y-6">
-            {reviews.map((review) => (
-              <div key={review.id} className="bg-purple-600 p-6 rounded-lg shadow-md border border-purple-500">
-                <div className="flex items-center mb-2">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <svg
-                      key={star}
-                      className={`w-5 h-5 ${
-                        review.rating >= star ? 'text-yellow-400' : 'text-gray-400'
-                      }`}
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.683-1.539 1.118l-2.8-2.034a1 1 0 00-1.176 0l-2.8 2.034c-.784.565-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <p className="text-gray-200 text-base mb-2">{review.comment}</p>
-                <p className="text-gray-400 text-sm">
-                  - {review.userName} on{' '}
-                  {new Date(review.timestamp?.toDate ? review.timestamp.toDate() : review.timestamp).toLocaleDateString()}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
+        ))}
       </div>
 
       <button
@@ -1753,149 +1730,119 @@ function ReviewsRatingsPage() {
   );
 }
 
-// NEW COMPONENT: Nakshatras Page - General Details about 27 Stars and their Rulers
+// Nakshatras Page Component: Displays general details about 27 Nakshatras (Stars)
 function NakshatrasPage() {
   const { setCurrentPage, defaultLanguage } = useContext(AuthContext);
-
-  // Data for Nakshatras (as provided in the image)
-  const nakshatrasData = [
-    { name: "Ashwini", ruler: "Ketu", deity: "Ashwina Kumar", symbol: "Horse's head" },
-    { name: "Bharni", ruler: "Shukra", deity: "Lord Yama", symbol: "Yoni" },
-    { name: "Kritika", ruler: "Surya", deity: "Agni", symbol: "Knife" },
-    { name: "Rohini", ruler: "Chandra", deity: "Brahma", symbol: "Cart, Temple, Banyana Tree" },
-    { name: "Mrigshira", ruler: "Mangal", deity: "Soma", symbol: "Deer's head" },
-    { name: "Ardara", ruler: "Rahu", deity: "Rudra", symbol: "Teardrop, Diamond, a Human head" },
-    { name: "Punarvasu", ruler: "Guru", deity: "Aditi", symbol: "Bow and quiver" },
-    { name: "Pushya", ruler: "Shani", deity: "Brihaspati", symbol: "Cow's udder, lotus, arrow and circle" },
-    { name: "Ashlesha", ruler: "Budh", deity: "Sarpa or Nagas", symbol: "Serpent" },
-    { name: "Magha", ruler: "Ketu", deity: "Pitra or Forefathers", symbol: "Royal throne" },
-    { name: "Poorva Phalguni", ruler: "Shukra", deity: "Aryaman", symbol: "Front leg of the bed, hammock, fig tree" },
-    { name: "Uttara Phalguni", ruler: "Surya", deity: "Bhaga", symbol: "four legs of the bed, hammock" },
-    { name: "Hasta", ruler: "Chandra", deity: "Saviti or Surya", symbol: "Hand or fist" },
-    { name: "Chitra", ruler: "Mangal", deity: "Tvastar or Vishwakarma", symbol: "Bright jewel or pearl" },
-    { name: "Swati", ruler: "Rahu", deity: "Vayu", symbol: "Shoot of plant, coral" },
-    { name: "Vishakha", ruler: "Guru", deity: "Indra and Agni", symbol: "Triumphal arch, potter's wheel" },
-    { name: "Anuradha", ruler: "Shani", deity: "Mitra", symbol: "Triumphal arch, lotus" },
-    { name: "Jyeshtha", ruler: "Budh", deity: "Indra", symbol: "Circular amulet, umbrella, and earrings" },
-    { name: "Moola", ruler: "Ketu", deity: "Nirti", symbol: "Bunch of roots tied together, elephant goad" },
-    { name: "Poorva-Shada", ruler: "Shukra", deity: "Apah", symbol: "Elephant tusk, fan, winnowing basket" },
-    { name: "Uttara-Shada", ruler: "Surya", deity: "Vishvedevas", symbol: "Elephant tusk" },
-    { name: "Shravana", ruler: "Chandra", deity: "Vishnu", symbol: "Ears or three footprints" },
-    { name: "Dhanishtha", ruler: "Mangal", deity: "Eight Vasus", symbol: "Drum or flute" },
-    { name: "Shatbhisha", ruler: "Rahu", deity: "Varuna", symbol: "Empty circle, flowers or stars" },
-    { name: "Poorva Bhadrapada", ruler: "Guru", deity: "Ajikapada", symbol: "Swords, or two front legs of cot, a man with two faes" },
-    { name: "Uttara Bhadrapada", ruler: "Shani", deity: "Ahir Budhyana", symbol: "Twins, back legs of cot, snake in the water" },
-    { name: "Revati", ruler: "Budh", deity: "Pushan", symbol: "Pair of fish, drum" },
-  ];
+  const [nakshatrasContent, setNakshatrasContent] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const getTranslation = (key) => {
     const translations = {
       en: {
-        title: "General Details About 27 Nakshatras (Stars)",
-        intro: "In Vedic astrology, Nakshatras (lunar mansions) are specific segments of the ecliptic through which the Moon passes. Each Nakshatra has a unique influence, a ruling planet, a presiding deity, and symbolic representation. Understanding them provides deeper insights into one's personality and destiny.",
-        tableHeaderName: "Nakshatra (Star)",
-        tableHeaderRuler: "Ruling Planet",
-        tableHeaderDeity: "Presiding Deity",
-        tableHeaderSymbol: "Symbol",
+        title: "27 Nakshatras (Stars) in Vedic Astrology",
+        intro: "Nakshatras, or lunar mansions, are crucial in Vedic astrology, offering a more precise understanding of an individual's personality, destiny, and timing of events than zodiac signs alone. There are 27 Nakshatras, each spanning 13 degrees 20 minutes of the zodiac, and each is ruled by a specific planet and associated with unique characteristics and deities.",
+        loading: "Generating Nakshatras details...",
         back: "Back to Home",
+        error: "Failed to load Nakshatras details. Please try again.",
       },
       hi: {
-        title: "27 नक्षत्रों (सितारों) के बारे में सामान्य विवरण",
-        intro: "वैदिक ज्योतिष में, नक्षत्र (चंद्र महल) क्रांतिवृत्त के विशिष्ट खंड होते हैं जिनसे होकर चंद्रमा गुजरता है। प्रत्येक नक्षत्र का एक अद्वितीय प्रभाव, एक शासक ग्रह, एक अधिष्ठाता देवता और प्रतीकात्मक प्रतिनिधित्व होता है। उन्हें समझना किसी के व्यक्तित्व और भाग्य में गहरी अंतर्दृष्टि प्रदान करता है।",
-        tableHeaderName: "नक्षत्र (तारा)",
-        tableHeaderRuler: "शासक ग्रह",
-        tableHeaderDeity: "अधिष्ठाता देवता",
-        tableHeaderSymbol: "प्रतीक",
+        title: "वैदिक ज्योतिष में 27 नक्षत्र (सितारे)",
+        intro: "नक्षत्र, या चंद्र हवेली, वैदिक ज्योतिष में महत्वपूर्ण हैं, जो केवल राशियों की तुलना में किसी व्यक्ति के व्यक्तित्व, भाग्य और घटनाओं के समय की अधिक सटीक समझ प्रदान करते हैं। 27 नक्षत्र हैं, प्रत्येक 13 डिग्री 20 मिनट के राशि चक्र में फैला हुआ है, और प्रत्येक एक विशिष्ट ग्रह द्वारा शासित है और अद्वितीय विशेषताओं और देवताओं से जुड़ा हुआ है।",
+        loading: "नक्षत्रों का विवरण उत्पन्न हो रहा है...",
         back: "होम पर वापस",
+        error: "नक्षत्रों का विवरण लोड करने में विफल। कृपया पुन: प्रयास करें।",
       },
       te: {
-        title: "27 నక్షత్రాల (నక్షత్రాలు) గురించి సాధారణ వివరాలు",
-        intro: "వేద జ్యోతిష్యశాస్త్రంలో, నక్షత్రాలు (చంద్ర గృహాలు) చంద్రుడు ప్రయాణించే గ్రహణ మార్గం యొక్క నిర్దిష్ట విభాగాలు. ప్రతి నక్షత్రానికి ఒక ప్రత్యేక ప్రభావం, ఒక పాలకుడు గ్రహం, ఒక అధిష్టాన దేవత మరియు ప్రతీకాత్మక ప్రాతినిధ్యం ఉంటుంది. వాటిని అర్థం చేసుకోవడం ఒకరి వ్యక్తిత్వం మరియు విధిపై లోతైన అంతర్దృష్టులను అందిస్తుంది.",
-        tableHeaderName: "నక్షత్రం (నక్షత్రం)",
-        tableHeaderRuler: "పాలక గ్రహం",
-        tableHeaderDeity: "అధిష్టాన దేవత",
-        tableHeaderSymbol: "చిహ్నం",
+        title: "వేద జ్యోతిష్యశాస్త్రంలో 27 నక్షత్రాలు (నక్షత్రాలు)",
+        intro: "నక్షత్రాలు లేదా చంద్ర మందిరాలు వేద జ్యోతిష్యశాస్త్రంలో కీలకమైనవి, రాశిచక్రాల కంటే ఒక వ్యక్తి యొక్క వ్యక్తిత్వం, విధి మరియు సంఘటనల సమయాన్ని మరింత ఖచ్చితంగా అర్థం చేసుకోవడానికి వీలు కల్పిస్తాయి. 27 నక్షత్రాలు ఉన్నాయి, ప్రతి ఒక్కటి రాశిచక్రంలో 13 డిగ్రీల 20 నిమిషాలు విస్తరించి ఉంటుంది, మరియు ప్రతి ఒక్కటి ఒక నిర్దిష్ట గ్రహం ద్వారా పాలించబడుతుంది మరియు ప్రత్యేక లక్షణాలు మరియు దేవతలతో సంబంధం కలిగి ఉంటుంది.",
+        loading: "నక్షత్రాల వివరాలు ఉత్పత్తి అవుతున్నాయి...",
         back: "హోమ్‌కు తిరిగి వెళ్ళు",
+        error: "నక్షత్రాల వివరాలను లోడ్ చేయడంలో విఫలమైంది. దయచేసి మళ్ళీ ప్రయత్నించండి.",
       },
       ml: {
-        title: "27 നക്ഷത്രങ്ങളെക്കുറിച്ചുള്ള പൊതുവായ വിവരങ്ങൾ",
-        intro: "വേദ ജ്യോതിഷത്തിൽ, നക്ഷത്രങ്ങൾ (ചാന്ദ്ര ഭവനങ്ങൾ) ചന്ദ്രൻ കടന്നുപോകുന്ന ക്രാന്തിവൃത്തത്തിന്റെ നിർദ്ദിഷ്ട ഭാഗങ്ങളാണ്. ഓരോ നക്ഷത്രത്തിനും അതിൻ്റേതായ സ്വാധീനം, ഒരു ഭരണ ഗ്രഹം, ഒരു അധിഷ്ഠിത ദേവൻ, പ്രതീകാത്മക പ്രാതിനിധ്യം എന്നിവയുണ്ട്. അവ മനസ്സിലാക്കുന്നത് ഒരാളുടെ വ്യക്തിത്വത്തെയും വിധിയെയും കുറിച്ച് ആഴത്തിലുള്ള ഉൾക്കാഴ്ചകൾ നൽകുന്നു.",
-        tableHeaderName: "നക്ഷത്രം (നക്ഷത്രം)",
-        tableHeaderRuler: "ഭരണ ഗ്രഹം",
-        tableHeaderDeity: "അധിഷ്ഠിത ദേവൻ",
-        tableHeaderSymbol: "പ്രതീകം",
+        title: "വേദ ജ്യോതിഷത്തിലെ 27 നക്ഷത്രങ്ങൾ",
+        intro: "നക്ഷത്രങ്ങൾ, അല്ലെങ്കിൽ ചാന്ദ്ര മാളികകൾ, വേദ ജ്യോതിഷത്തിൽ നിർണായകമാണ്, രാശിചിഹ്നങ്ങളേക്കാൾ ഒരു വ്യക്തിയുടെ വ്യക്തിത്വം, വിധി, സംഭവങ്ങളുടെ സമയം എന്നിവയെക്കുറിച്ച് കൂടുതൽ കൃത്യമായ ധാരണ നൽകുന്നു. 27 നക്ഷത്രങ്ങളുണ്ട്, ഓരോന്നിനും രാശിചക്രത്തിന്റെ 13 ഡിഗ്രി 20 മിനിറ്റ് വ്യാപിച്ചുകിടക്കുന്നു, ഓരോന്നിനും ഒരു പ്രത്യേക ഗ്രഹത്തിന്റെ ഭരണം ഉണ്ട് കൂടാതെ അതുല്യമായ സ്വഭാവസവിശേഷതകളും ദേവതകളും ഇതിന് ബന്ധപ്പെട്ടിരിക്കുന്നു.",
+        loading: "നക്ഷത്ര വിവരങ്ങൾ സൃഷ്ടിക്കുന്നു...",
         back: "ഹോമിലേക്ക് തിരികെ",
+        error: "നക്ഷത്ര വിവരങ്ങൾ ലോഡ് ചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു. ദയവായി വീണ്ടും ശ്രമിക്കുക.",
       },
       ta: {
-        title: "27 நட்சத்திரங்கள் பற்றிய பொதுவான விவரங்கள்",
-        intro: "வேத ஜோதிடத்தில், நட்சத்திரங்கள் (சந்திர வீடுகள்) என்பது சந்திரன் கடந்து செல்லும் இரைச்சல் வட்டத்தின் குறிப்பிட்ட பிரிவுகளாகும். ஒவ்வொரு நட்சத்திரத்திற்கும் ஒரு தனிப்பட்ட செல்வாக்கு, ஒரு ஆளும் கிரகம், ஒரு presiding தெய்வம் மற்றும் குறியீட்டு பிரதிநிதித்துவம் உள்ளது. அவற்றைப் புரிந்துகொள்வது ஒருவரின் ஆளுமை மற்றும் விதி பற்றிய ஆழமான நுண்ணறிவுகளை வழங்குகிறது.",
-        tableHeaderName: "நட்சத்திரம்",
-        tableHeaderRuler: "ஆளும் கிரகம்",
-        tableHeaderDeity: "அதிபதி தெய்வம்",
-        tableHeaderSymbol: "சின்னம்",
+        title: "வேத ஜோதிடத்தில் 27 நட்சத்திரங்கள்",
+        intro: "நட்சத்திரங்கள், அல்லது சந்திர மாளிகைகள், வேத ஜோதிடத்தில் முக்கியமானவை, ராசி அறிகுறிகளை விட ஒரு நபரின் ஆளுமை, விதி மற்றும் நிகழ்வுகளின் நேரம் பற்றிய துல்லியமான புரிதலை வழங்குகின்றன. 27 நட்சத்திரங்கள் உள்ளன, ஒவ்வொன்றும் ராசிச்சக்கரத்தில் 13 டிகிரி 20 நிமிடங்கள் பரவி, ஒவ்வொன்றும் ஒரு குறிப்பிட்ட கிரகத்தால் ஆளப்பட்டு, தனித்துவமான குணாதிசயங்கள் மற்றும் தெய்வங்களுடன் தொடர்புடையது.",
+        loading: "நட்சத்திரங்கள் விவரங்களை உருவாக்குகிறது...",
         back: "முகப்புக்கு திரும்பு",
+        error: "நட்சத்திரங்கள் விவரங்களை ஏற்ற முடியவில்லை. மீண்டும் முயற்சிக்கவும்.",
       },
       kn: {
-        title: "27 ನಕ್ಷತ್ರಗಳ ಬಗ್ಗೆ ಸಾಮಾನ್ಯ ವಿವರಗಳು",
-        intro: "ವೈದಿಕ ಜ್ಯೋತಿಷ್ಯದಲ್ಲಿ, ನಕ್ಷತ್ರಗಳು (ಚಂದ್ರನ ನಿವಾಸಗಳು) ಚಂದ್ರನು ಹಾದುಹೋಗುವ ಗ್ರಹಣ ವೃತ್ತದ ನಿರ್ದಿಷ್ಟ ವಿಭಾಗಗಳಾಗಿವೆ. ಪ್ರತಿಯೊಂದು ನಕ್ಷತ್ರವು ವಿಶಿಷ್ಟ ಪ್ರಭಾವ, ಆಡಳಿತ ಗ್ರಹ, ಅಧಿದೇವತೆ ಮತ್ತು ಸಾಂಕೇತಿಕ ಪ್ರಾತಿನಿಧ್ಯವನ್ನು ಹೊಂದಿದೆ. ಅವುಗಳನ್ನು ಅರ್ಥಮಾಡಿಕೊಳ್ಳುವುದು ಒಬ್ಬರ ವ್ಯಕ್ತಿತ್ವ ಮತ್ತು ಅದೃಷ್ಟದ ಬಗ್ಗೆ ಆಳವಾದ ಒಳನೋಟಗಳನ್ನು ನೀಡುತ್ತದೆ.",
-        tableHeaderName: "ನಕ್ಷತ್ರ",
-        tableHeaderRuler: "ಆಡಳಿತ ಗ್ರಹ",
-        tableHeaderDeity: "ಅಧಿದೇವತೆ",
-        tableHeaderSymbol: "ಚಿಹ್ನೆ",
+        title: "ವೈದಿಕ ಜ್ಯೋತಿಷ್ಯದಲ್ಲಿ 27 ನಕ್ಷತ್ರಗಳು",
+        intro: "ನಕ್ಷತ್ರಗಳು, ಅಥವಾ ಚಂದ್ರನ ರಾಶಿಗಳು, ವೈದಿಕ ಜ್ಯೋತಿಷ್ಯದಲ್ಲಿ ನಿರ್ಣಾಯಕವಾಗಿವೆ, ರಾಶಿಚಕ್ರ ಚಿಹ್ನೆಗಳಿಗಿಂತ ಹೆಚ್ಚಾಗಿ ಒಬ್ಬ ವ್ಯಕ್ತಿಯ ವ್ಯಕ್ತಿತ್ವ, ಅದೃಷ್ಟ ಮತ್ತು ಘಟನೆಗಳ ಸಮಯದ ಬಗ್ಗೆ ಹೆಚ್ಚು ನಿಖರವಾದ ತಿಳುವಳಿಕೆಯನ್ನು ನೀಡುತ್ತವೆ. 27 ನಕ್ಷತ್ರಗಳಿವೆ, ಪ್ರತಿಯೊಂದೂ ರಾಶಿಚಕ್ರದ 13 ಡಿಗ್ರಿ 20 ನಿಮಿಷಗಳನ್ನು ವ್ಯಾಪಿಸುತ್ತದೆ, ಮತ್ತು ಪ್ರತಿಯೊಂದೂ ನಿರ್ದಿಷ್ಟ ಗ್ರಹದಿಂದ ಆಳಲ್ಪಡುತ್ತದೆ ಮತ್ತು ಅನನ್ಯ ಗುಣಲಕ್ಷಣಗಳು ಮತ್ತು ದೇವತೆಗಳೊಂದಿಗೆ ಸಂಬಂಧ ಹೊಂದಿದೆ.",
+        loading: "ನಕ್ಷತ್ರಗಳ ವಿವರಗಳನ್ನು ರಚಿಸಲಾಗುತ್ತಿದೆ...",
         back: "ಮನೆಗೆ ಹಿಂತಿರುಗಿ",
+        error: "ನಕ್ಷತ್ರಗಳ ವಿವರಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
       },
     };
     return translations[defaultLanguage]?.[key] || translations['en'][key];
   };
 
+  useEffect(() => {
+    const fetchNakshatras = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const prompt = `Provide general details about the 27 Nakshatras (Stars) in Vedic Astrology in ${defaultLanguage} language. Include their names and a very brief, one-sentence description for each, along with their ruling planet. Organize this as a list. Also, include an introductory paragraph and a concluding remark about their significance.`;
+
+        const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+        const payload = { contents: chatHistory };
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (result.candidates && result.candidates.length > 0 &&
+            result.candidates[0].content && result.candidates[0].content.parts &&
+            result.candidates[0].content.parts.length > 0) {
+          const text = result.candidates[0].content.parts[0].text;
+          setNakshatrasContent(text);
+        } else {
+          setError(getTranslation('error'));
+        }
+      } catch (err) {
+        console.error("Error fetching Nakshatras content:", err);
+        setError(getTranslation('error') + `: ${err.message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNakshatras();
+  }, [defaultLanguage]);
+
   return (
-    <div className="bg-purple-700 p-8 rounded-2xl shadow-xl max-w-4xl w-full border border-purple-600">
+    <div className="bg-purple-700 p-8 rounded-2xl shadow-xl max-w-3xl w-full border border-purple-600">
       <h2 className="text-3xl font-bold text-center mb-6 text-white">
         {getTranslation('title')}
       </h2>
 
-      <div className="bg-purple-600 p-6 rounded-lg text-white prose prose-invert max-w-none">
-        <p className="mb-6">{getTranslation('intro')}</p>
-
-        <div className="overflow-x-auto"> {/* Added for horizontal scrolling on small screens */}
-          <table className="min-w-full divide-y divide-purple-500">
-            <thead className="bg-purple-700">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider rounded-tl-lg">
-                  {getTranslation('tableHeaderName')}
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  {getTranslation('tableHeaderRuler')}
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  {getTranslation('tableHeaderDeity')}
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider rounded-tr-lg">
-                  {getTranslation('tableHeaderSymbol')}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-purple-500">
-              {nakshatrasData.map((nakshatra, index) => (
-                <tr key={index} className={index % 2 === 0 ? 'bg-purple-600' : 'bg-purple-650'}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
-                    {nakshatra.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
-                    {nakshatra.ruler}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
-                    {nakshatra.deity}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
-                    {nakshatra.symbol}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {loading && (
+        <div className="flex items-center justify-center text-blue-300">
+          <svg className="animate-spin h-5 w-5 mr-3 text-blue-300" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {getTranslation('loading')}
         </div>
-      </div>
+      )}
+      {error && <p className="text-red-300 mt-4 text-center">{error}</p>}
+      {nakshatrasContent && (
+        <div className="bg-purple-600 p-6 rounded-lg text-white prose prose-invert max-w-none">
+          <div dangerouslySetInnerHTML={{ __html: nakshatrasContent.replace(/\n/g, '<br>') }} />
+        </div>
+      )}
 
       <button
         onClick={() => setCurrentPage('home')}
@@ -1906,6 +1853,5 @@ function NakshatrasPage() {
     </div>
   );
 }
-
 
 export default App;
